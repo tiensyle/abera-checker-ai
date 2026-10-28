@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cosmetic Content Checker AI - Demo Trực Quan Hoàn Chỉnh</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- Top App Navigation & Role Switcher Header -->
+  <header class="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur shadow-xs">
+    <div class="flex items-center gap-3">
+      <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+        <i data-lucide="shield-check" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <div class="text-sm font-bold tracking-tight text-slate-900 uppercase flex items-center gap-2">
+          <span>COSMETIC AI CHECKER</span>
+          <span class="rounded bg-blue-100 text-blue-700 px-1.5 py-0.5 text-[10px] font-mono">LIVE DEMO</span>
+        </div>
+        <div class="text-[11px] text-slate-500">Thẩm định quảng cáo theo TT 06/2011/TT-BYT & NĐ 181/2013/NĐ-CP</div>
+      </div>
+    </div>
+
+    <!-- Live Port 3000 indicator & Role Switcher -->
+    <div class="flex items-center gap-4">
+      <a href="http://localhost:3000/dashboard" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition">
+        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Localhost:3000 Đang Hoạt Động</span>
+        <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+      </a>
+
+      <!-- Role Selector -->
+      <div class="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 p-1 text-xs">
+        <i data-lucide="layers" class="w-3.5 h-3.5 text-slate-400 ml-1.5"></i>
+        <span class="text-[11px] font-medium text-slate-500 hidden md:inline">Vai trò:</span>
+        <select id="role-select" onchange="changeRole(this.value)" class="rounded border-0 bg-transparent py-0.5 pl-1 pr-6 text-xs font-semibold text-slate-800 focus:ring-0 cursor-pointer">
+          <option value="super_admin">Super Admin (Toàn quyền)</option>
+          <option value="reviewer">Reviewer / Thẩm định pháp chế</option>
+          <option value="employee">Nhân viên Content</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2 border-l border-slate-200 pl-4">
+        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&auto=format&fit=crop&q=80" alt="Avatar" class="h-8 w-8 rounded-full border border-slate-200 object-cover">
+        <div class="hidden text-left xl:block">
+          <div class="text-xs font-semibold text-slate-800 leading-tight" id="user-name">Nguyễn Thành Nam</div>
+          <div class="text-[10px] text-slate-400" id="user-role-badge">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex-1 flex">
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 border-r border-slate-200 bg-white p-4 space-y-1 hidden md:block">
+      <div class="px-3 pb-2 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+        Chức năng chính
+      </div>
+      <button onclick="switchTab('dashboard')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-semibold text-blue-700 bg-blue-50 transition" data-tab="dashboard">
+        <div class="flex items-center gap-3">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>1. Tổng quan</span>
+        </div>
+      </button>
+
+      <button onclick="switchTab('brands')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="brands">
+        <div class="flex items-center gap-3">
+          <i data-lucide="building-2" class="w-4 h-4 text-slate-400"></i>
+          <span>2. Thương hiệu</span>
+        </div>
+        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold">5</span>
+      </button>
+
+      <button onclick="switchTab('products')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="products">
+        <div class="flex items-center gap-3">
+          <i data-lucide="package" class="w-4 h-4 text-slate-400"></i>
+          <span>3. Sản phẩm</span>
+        </div>
+      </button>
+
+      <button onclick="switchTab('documents')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="documents">
+        <div class="flex items-center gap-3">
+          <i data-lucide="folder-archive" class="w-4 h-4 text-slate-400"></i>
+          <span>4. Kho tài liệu</span>
+        </div>
+      </button>
+
+      <button onclick="switchTab('checker')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-semibold text-blue-600 hover:bg-blue-50/50 transition border border-blue-200 bg-blue-50/30" data-tab="checker">
+        <div class="flex items-center gap-3">
+          <i data-lucide="sparkles" class="w-4 h-4 text-blue-600"></i>
+          <span>5. Kiểm tra bài viết AI</span>
+        </div>
+        <span class="rounded bg-blue-600 text-white px-1.5 py-0.5 text-[10px] font-bold">AI Core</span>
+      </button>
+
+      <button onclick="switchTab('history')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="history">
+        <div class="flex items-center gap-3">
+          <i data-lucide="history" class="w-4 h-4 text-slate-400"></i>
+          <span>6. Lịch sử kiểm tra</span>
+        </div>
+      </button>
+
+      <button onclick="switchTab('reports')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="reports">
+        <div class="flex items-center gap-3">
+          <i data-lucide="bar-chart-3" class="w-4 h-4 text-slate-400"></i>
+          <span>7. Báo cáo thống kê</span>
+        </div>
+      </button>
+
+      <button onclick="switchTab('users')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="users">
+        <div class="flex items-center gap-3">
+          <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
+          <span>8. Quản lý nhân viên</span>
+        </div>
+      </button>
+
+      <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center justify-between rounded-lg px-3.5 py-2.5 text-xs font-medium text-slate-650 hover:bg-slate-50 transition" data-tab="settings">
+        <div class="flex items-center gap-3">
+          <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
+          <span>9. Cài đặt hệ thống</span>
+        </div>
+      </button>
+
+      <div class="pt-6">
+        <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+          <div class="font-bold text-slate-800 flex items-center gap-1.5">
+            <i data-lucide="shield" class="w-3.5 h-3.5 text-blue-600"></i>
+            Pháp lý áp dụng:
+          </div>
+          <div class="text-[11px] text-slate-500 mt-1 leading-relaxed">
+            Thông tư 06/2011/TT-BYT & Nghị định 181/2013/NĐ-CP
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Tabs -->
+    <main class="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+
+      <!-- ================= TAB 1: TỔNG QUAN ================= -->
+      <section id="tab-dashboard" class="tab-content active space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Tổng Quan Thẩm Định Mỹ Phẩm AI</h1>
+            <p className="text-xs text-slate-500 mt-1">Hệ thống đối chiếu hồ sơ công bố và giám sát rủi ro truyền thông</p>
+          </div>
+          <button onclick="switchTab('checker')" class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-blue-700">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>Bắt đầu kiểm tra bài viết</span>
+          </button>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-medium text-slate-500">Thương hiệu</span>
+            <div class="mt-2 text-2xl font-bold text-slate-900">5</div>
+            <p class="text-[11px] text-slate-400 mt-1">AURA, DERM, LUMI, MEN'S, PERLE</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-medium text-slate-500">Sản phẩm quản lý</span>
+            <div class="mt-2 text-2xl font-bold text-slate-900">5</div>
+            <p class="text-[11px] text-slate-400 mt-1">Có số tiếp nhận Phiếu công bố CBMP</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-medium text-slate-500">Tài liệu hồ sơ RAG</span>
+            <div class="mt-2 text-2xl font-bold text-slate-900">4</div>
+            <p class="text-[11px] text-slate-400 mt-1">Đã phân trang & số hóa</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-medium text-slate-500">Bài viết đã thẩm định</span>
+            <div class="mt-2 text-2xl font-bold text-emerald-600">24</div>
+            <p class="text-[11px] text-slate-400 mt-1">Tỷ lệ tuân thủ: 82.4%</p>
+          </div>
+        </div>
+
+        <!-- Common Violations -->
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wide">
+            Các nhóm lỗi quảng cáo thường gặp (Theo Thông tư 06/2011/TT-BYT)
+          </h2>
+          <div class="space-y-3 text-xs">
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>1. Từ ngữ mang tính điều trị (trị mụn, trị nám tận gốc, chữa khỏi)</span>
+                <span class="text-rose-600 font-bold">42 lần vi phạm</span>
+              </div>
+              <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-rose-500 w-[85%] rounded-full"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>2. Cam kết tuyệt đối hóa (100%, an toàn tuyệt đối, không tác dụng phụ)</span>
+                <span class="text-amber-600 font-bold">28 lần vi phạm</span>
+              </div>
+              <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-500 w-[60%] rounded-full"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between font-semibold mb-1">
+                <span>3. Tuyên bố hiệu quả thần tốc phi thực tế (trắng sau 3 ngày, bật tông 1 đêm)</span>
+                <span class="text-blue-600 font-bold">19 lần vi phạm</span>
+              </div>
+              <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500 w-[42%] rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: THƯƠNG HIỆU ================= -->
+      <section id="tab-brands" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Quản Lý 5 Thương Hiệu Khởi Tạo</h1>
+          <p class="text-xs text-slate-500 mt-1">Dữ liệu thương hiệu chiến lược ban đầu đã được thiết lập</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=120&auto=format&fit=crop&q=60" class="h-12 w-12 rounded-xl object-cover border border-slate-100">
+                <div>
+                  <h3 class="font-bold text-slate-900">AURA</h3>
+                  <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono">Mã: AURA</span>
+                </div>
+              </div>
+              <p class="mt-3 text-xs text-slate-600 leading-relaxed">Thương hiệu mỹ phẩm cao cấp với công nghệ dưỡng sáng da và chống lão hóa sinh học.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-emerald-600 flex justify-between">
+              <span>2 Sản phẩm</span>
+              <span>Đang hoạt động</span>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?w=120&auto=format&fit=crop&q=60" class="h-12 w-12 rounded-xl object-cover border border-slate-100">
+                <div>
+                  <h3 class="font-bold text-slate-900">DERM</h3>
+                  <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono">Mã: DERM</span>
+                </div>
+              </div>
+              <p class="mt-3 text-xs text-slate-600 leading-relaxed">Dược mỹ phẩm chăm sóc chuyên sâu dành cho da nhạy cảm và hàng rào bảo vệ da.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-emerald-600 flex justify-between">
+              <span>2 Sản phẩm</span>
+              <span>Đang hoạt động</span>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=120&auto=format&fit=crop&q=60" class="h-12 w-12 rounded-xl object-cover border border-slate-100">
+                <div>
+                  <h3 class="font-bold text-slate-900">LUMI</h3>
+                  <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono">Mã: LUMI</span>
+                </div>
+              </div>
+              <p class="mt-3 text-xs text-slate-600 leading-relaxed">Mỹ phẩm trang điểm và phục hồi căng bóng tự nhiên chiết xuất thiên nhiên lành tính.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-emerald-600 flex justify-between">
+              <span>1 Sản phẩm</span>
+              <span>Đang hoạt động</span>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1512290900672-1f55b9a89d46?w=120&auto=format&fit=crop&q=60" class="h-12 w-12 rounded-xl object-cover border border-slate-100">
+                <div>
+                  <h3 class="font-bold text-slate-900">MEN'S</h3>
+                  <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono">Mã: MENS</span>
+                </div>
+              </div>
+              <p class="mt-3 text-xs text-slate-600 leading-relaxed">Dòng sản phẩm chăm sóc da nam giới tối giản, hiệu quả cao, kiểm soát dầu và mụn.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-emerald-600 flex justify-between">
+              <span>1 Sản phẩm</span>
+              <span>Đang hoạt động</span>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-3">
+                <img src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=120&auto=format&fit=crop&q=60" class="h-12 w-12 rounded-xl object-cover border border-slate-100">
+                <div>
+                  <h3 class="font-bold text-slate-900">PERLE</h3>
+                  <span class="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono">Mã: PERLE</span>
+                </div>
+              </div>
+              <p class="mt-3 text-xs text-slate-600 leading-relaxed">Thương hiệu ngọc trai dưỡng trắng an toàn, cấp ẩm tầng sâu và chống oxy hóa.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-emerald-600 flex justify-between">
+              <span>1 Sản phẩm (Chưa duyệt)</span>
+              <span>Đang hoạt động</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: SẢN PHẨM ================= -->
+      <section id="tab-products" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Hồ Sơ Sản Phẩm Mỹ Phẩm</h1>
+          <p class="text-xs text-slate-500 mt-1">Thông tin số tiếp nhận Phiếu công bố, thành phần INCI và công dụng xác minh</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-700 font-mono">AUR-SRM-01</span>
+              <span class="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">Hồ sơ đã duyệt</span>
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm">Tinh chất dưỡng sáng da AURA Niacinamide 10% Glow Serum</h3>
+            <div class="text-xs text-slate-600 space-y-1">
+              <div>Số CBMP: <strong class="font-mono">184920/22/CBMP-QLD</strong></div>
+              <div>Thương hiệu: <strong>AURA</strong></div>
+              <div>Thành phần INCI: <span class="text-slate-500">Water, Niacinamide (10%), Zinc PCA (1%), Glycerin, Sodium Hyaluronate...</span></div>
+              <div class="pt-2 font-semibold text-slate-700">Công dụng đã xác minh:</div>
+              <ul class="list-disc pl-4 text-[11px] text-slate-600 space-y-0.5">
+                <li>Giúp làm sáng đều màu da và hỗ trợ làm mờ các đốm nâu nhẹ trên bề mặt biểu bì.</li>
+                <li>Hỗ trợ kiểm soát bã nhờn dư thừa và cân bằng độ ẩm.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-700 font-mono">DRM-CRM-02</span>
+              <span class="rounded bg-emerald-100 text-emerald-800 px-2 py-0.5 text-[10px] font-bold">Hồ sơ đã duyệt</span>
+            </div>
+            <h3 class="font-bold text-slate-900 text-sm">Kem dưỡng ẩm phục hồi hàng rào da DERM Ceramide Barrier Repair Cream</h3>
+            <div class="text-xs text-slate-600 space-y-1">
+              <div>Số CBMP: <strong class="font-mono">201948/23/CBMP-QLD</strong></div>
+              <div>Thương hiệu: <strong>DERM</strong></div>
+              <div>Thành phần INCI: <span class="text-slate-500">Ceramide NP, AP, EOP, Phytosphingosine, Panthenol (B5 5%)...</span></div>
+              <div class="pt-2 font-semibold text-slate-700">Công dụng đã xác minh:</div>
+              <ul class="list-disc pl-4 text-[11px] text-slate-600 space-y-0.5">
+                <li>Hỗ trợ củng cố hàng rào lipid bảo vệ da tự nhiên.</li>
+                <li>Làm dịu làn da khô ráp, nứt nẻ và giảm châm chích do thiếu ẩm.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: KHO TÀI LIỆU ================= -->
+      <section id="tab-documents" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Kho Tài Liệu Nguồn & Hồ Sơ Số Hóa</h1>
+          <p class="text-xs text-slate-500 mt-1">Hồ sơ trích xuất văn bản từng trang phục vụ đối chiếu RAG chính xác</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+              <tr>
+                <th class="p-3.5">Tên tài liệu</th>
+                <th class="p-3.5">Sản phẩm</th>
+                <th class="p-3.5">Loại tài liệu</th>
+                <th class="p-3.5">Số trang</th>
+                <th class="p-3.5">Trạng thái RAG</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="p-3.5 font-bold text-blue-700">Phieu_Cong_Bo_AURA_Niacinamide_184920.pdf</td>
+                <td class="p-3.5">Serum AURA Niacinamide 10%</td>
+                <td class="p-3.5">Phiếu công bố CBMP</td>
+                <td class="p-3.5 font-semibold">2 trang</td>
+                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[10px]">Đã duyệt RAG</span></td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-bold text-blue-700">Bao_Cao_Thu_Nghiem_Lam_Sang_AURA_2022.pdf</td>
+                <td class="p-3.5">Serum AURA Niacinamide 10%</td>
+                <td class="p-3.5">Thử nghiệm lâm sàng</td>
+                <td class="p-3.5 font-semibold">1 trang</td>
+                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[10px]">Đã duyệt RAG</span></td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-bold text-blue-700">Phieu_Cong_Bo_DERM_Ceramide_201948.pdf</td>
+                <td class="p-3.5">Kem DERM Ceramide Barrier Repair</td>
+                <td class="p-3.5">Phiếu công bố CBMP</td>
+                <td class="p-3.5 font-semibold">1 trang</td>
+                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[10px]">Đã duyệt RAG</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: KIỂM TRA BÀI VIẾT AI (CORE INTERACTIVE) ================= -->
+      <section id="tab-checker" class="tab-content space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-6 h-6 text-blue-600"></i>
+              <span>Kiểm Tra Nội Dung Quảng Cáo AI</span>
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">Đối chiếu từng câu với hồ sơ đã phê duyệt & quy định pháp chế Việt Nam</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs">
+            <span class="font-semibold text-slate-600">Chọn mẫu thử:</span>
+            <button onclick="loadSample(1)" class="rounded-lg bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 font-bold hover:bg-rose-100">
+              Mẫu 1: Vi phạm trị nám & 100%
+            </button>
+            <button onclick="loadSample(2)" class="rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 font-bold hover:bg-emerald-100">
+              Mẫu 2: Chuẩn mực pháp chế
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <!-- Left Panel: Input -->
+          <div class="lg:col-span-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
+            <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-800">1. Nhập Bài Viết Quảng Cáo</span>
+              <span class="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded">Hồ sơ sẵn sàng</span>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Sản phẩm đối chiếu:</label>
+              <select class="w-full rounded-lg border border-slate-200 p-2 text-xs font-semibold">
+                <option>[AURA] Tinh chất dưỡng sáng da AURA Niacinamide 10% Glow Serum</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Tiêu đề bài viết:</label>
+              <input type="text" id="checker-title" class="w-full rounded-lg border border-slate-200 p-2 text-xs font-medium" value="Siêu phẩm Serum AURA - Đặc trị nám tận gốc chỉ sau 3 ngày!">
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 mb-1">Nội dung bài viết:</label>
+              <textarea id="checker-content" rows="10" class="w-full rounded-lg border border-slate-200 p-3 text-xs leading-relaxed font-sans focus:outline-none focus:ring-1 focus:ring-blue-500">Tinh chất AURA Niacinamide 10% Glow Serum là bước đột phá mới giúp điều trị nám tận gốc và xóa sạch mụn hoàn toàn.
+Sản phẩm cam kết hiệu quả 100%, an toàn tuyệt đối và hoàn toàn không kích ứng cho mọi loại da.
+Chỉ sau 3 ngày sử dụng, làn da sẽ bật 5 tông và tái tạo tế bào gốc sâu bên trong biểu bì da.
+Nhờ chứa Niacinamide 10% và Zinc PCA 1%, serum giúp làm sáng đều màu da và hỗ trợ kiểm soát bã nhờn dư thừa.
+Hãy thoa 2 lần mỗi ngày để sở hữu làn da không tì vết mãi mãi!</textarea>
+            </div>
+
+            <button onclick="simulateCheck()" id="btn-run-check" class="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-3 text-xs font-bold text-white shadow-md shadow-blue-500/25 hover:from-blue-700 hover:to-indigo-700 transition">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+              <span>KIỂM TRA BẰNG AI</span>
+            </button>
+          </div>
+
+          <!-- Right Panel: Result -->
+          <div class="lg:col-span-7 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-4" id="checker-results">
+            <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-800">2. Kết Quả Thẩm Định Chi Tiết</span>
+              <span class="rounded bg-blue-50 text-blue-700 px-2 py-0.5 text-[10px] font-mono font-bold">Hybrid RAG v2.0</span>
+            </div>
+
+            <!-- Overall Banner -->
+            <div id="result-banner" class="rounded-xl p-4 border bg-rose-50 border-rose-200 text-rose-950 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i data-lucide="shield-alert" class="w-6 h-6 text-rose-600"></i>
+                <div>
+                  <div class="text-xs font-bold uppercase">PHÁT HIỆN RỦI RO PHÁP LÝ & TỪ CẤM</div>
+                  <div class="text-[11px] text-rose-800 mt-0.5">Phát hiện từ ngữ mang tính điều trị (trị nám tận gốc) & cam kết tuyệt đối 100%.</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xl font-black font-mono text-rose-700" id="result-score">20%</div>
+                <div class="text-[10px] font-bold uppercase text-slate-500">Độ phù hợp</div>
+              </div>
+            </div>
+
+            <!-- Counter Pills -->
+            <div class="grid grid-cols-4 gap-2 text-center text-xs">
+              <div class="rounded-lg bg-emerald-50 border border-emerald-200 p-2">
+                <div class="text-base font-bold text-emerald-700" id="count-compliant">1</div>
+                <div class="text-[10px] font-bold text-emerald-800 uppercase">Phù hợp</div>
+              </div>
+              <div class="rounded-lg bg-amber-50 border border-amber-200 p-2">
+                <div class="text-base font-bold text-amber-700" id="count-insufficient">1</div>
+                <div class="text-[10px] font-bold text-amber-800 uppercase">Chưa đủ căn cứ</div>
+              </div>
+              <div class="rounded-lg bg-rose-50 border border-rose-200 p-2">
+                <div class="text-base font-bold text-rose-700" id="count-contradictory">3</div>
+                <div class="text-[10px] font-bold text-rose-800 uppercase">Mâu thuẫn luật</div>
+              </div>
+              <div class="rounded-lg bg-purple-50 border border-purple-200 p-2">
+                <div class="text-base font-bold text-purple-700" id="count-risk">3</div>
+                <div class="text-[10px] font-bold text-purple-800 uppercase">Rủi ro pháp lý</div>
+              </div>
+            </div>
+
+            <!-- Claims List Container -->
+            <div class="space-y-3" id="claims-container">
+              <!-- Claim 1 -->
+              <div class="rounded-xl border border-rose-200 bg-rose-50/30 p-3.5 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="rounded bg-rose-600 text-white px-2 py-0.5 text-[10px] font-bold">MÂU THUẪN PHÁP CHẾ (RỦI RO CAO)</span>
+                  <span class="text-[10px] text-slate-400 font-mono">#1</span>
+                </div>
+                <p class="font-semibold text-slate-900 bg-white/80 p-2 rounded border border-slate-100">
+                  "Tinh chất AURA Niacinamide 10% Glow Serum là bước đột phá mới giúp điều trị nám tận gốc và xóa sạch mụn hoàn toàn."
+                </p>
+                <div class="text-rose-700 text-[11px] font-medium space-y-0.5">
+                  <div>• [Thông tư 06/2011/TT-BYT Phụ lục 03-MP] Cấm từ "điều trị", "trị nám tận gốc" trong quảng cáo mỹ phẩm.</div>
+                  <div>• [Điều 8 Luật Quảng cáo] Không được gây hiểu nhầm mỹ phẩm có tác dụng như thuốc chữa bệnh.</div>
+                </div>
+                <div class="rounded bg-emerald-50 border border-emerald-200 p-2.5 text-emerald-900">
+                  <div class="font-bold text-[11px] flex justify-between items-center mb-1">
+                    <span>Gợi ý chỉnh sửa hợp chuẩn:</span>
+                    <button onclick="applySingleRewrite(this, 'Tinh chất AURA Niacinamide 10% Glow Serum giúp hỗ trợ làm sáng đều màu da và cải thiện đốm nâu nhẹ trên bề mặt.')" class="bg-emerald-600 text-white px-2 py-0.5 rounded text-[10px] font-bold hover:bg-emerald-700">Áp dụng</button>
+                  </div>
+                  <p class="italic text-[11px]">"Tinh chất AURA Niacinamide 10% Glow Serum giúp hỗ trợ làm sáng đều màu da và cải thiện đốm nâu nhẹ trên bề mặt."</p>
+                </div>
+              </div>
+
+              <!-- Claim 2 -->
+              <div class="rounded-xl border border-rose-200 bg-rose-50/30 p-3.5 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="rounded bg-rose-600 text-white px-2 py-0.5 text-[10px] font-bold">RỦI RO QUẢNG CÁO CAO</span>
+                  <span class="text-[10px] text-slate-400 font-mono">#2</span>
+                </div>
+                <p class="font-semibold text-slate-900 bg-white/80 p-2 rounded border border-slate-100">
+                  "Sản phẩm cam kết hiệu quả 100%, an toàn tuyệt đối và hoàn toàn không kích ứng cho mọi loại da."
+                </p>
+                <div class="text-rose-700 text-[11px] font-medium">
+                  • [Luật Quảng cáo 2012 Điều 8] Cấm khẳng định tuyệt đối hóa công dụng "100%", "an toàn tuyệt đối".
+                </div>
+              </div>
+
+              <!-- Claim 3 -->
+              <div class="rounded-xl border border-emerald-200 bg-emerald-50/30 p-3.5 space-y-2 text-xs">
+                <div class="flex items-center justify-between">
+                  <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-bold">PHÙ HỢP TÀI LIỆU CÔNG BỐ</span>
+                  <span class="text-[10px] text-slate-400 font-mono">#4</span>
+                </div>
+                <p class="font-semibold text-slate-900 bg-white/80 p-2 rounded border border-slate-100">
+                  "Nhờ chứa Niacinamide 10% và Zinc PCA 1%, serum giúp làm sáng đều màu da và hỗ trợ kiểm soát bã nhờn dư thừa."
+                </p>
+                <div class="rounded bg-blue-50 border border-blue-100 p-2 text-[11px] text-blue-900">
+                  <strong>Dẫn chứng tài liệu:</strong> Phieu_Cong_Bo_AURA_Niacinamide_184920.pdf (Trang 1, Mục 4 - Mục đích sử dụng).
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 6: LỊCH SỬ KIỂM TRA ================= -->
+      <section id="tab-history" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Lịch Sử Kiểm Tra & Phê Duyệt</h1>
+          <p class="text-xs text-slate-500 mt-1">Lưu trữ các lần thẩm định bất biến phục vụ tra cứu kiểm toán</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[11px]">
+              <tr>
+                <th class="p-3.5">Tiêu đề bài viết</th>
+                <th class="p-3.5">Sản phẩm</th>
+                <th class="p-3.5">Tỷ lệ phù hợp</th>
+                <th class="p-3.5">Trạng thái duyệt</th>
+                <th class="p-3.5">Người duyệt</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="p-3.5 font-bold text-slate-900">Dưỡng sáng và cân bằng dầu thừa cùng Serum AURA</td>
+                <td class="p-3.5">Serum AURA Niacinamide 10%</td>
+                <td class="p-3.5 font-bold text-emerald-600">100%</td>
+                <td class="p-3.5"><span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold text-[10px]">Đã phê duyệt</span></td>
+                <td class="p-3.5 text-slate-500">Trần Thị Mai (Reviewer)</td>
+              </tr>
+              <tr>
+                <td class="p-3.5 font-bold text-slate-900">Siêu phẩm Serum AURA - Đặc trị nám tận gốc</td>
+                <td class="p-3.5">Serum AURA Niacinamide 10%</td>
+                <td class="p-3.5 font-bold text-rose-600">20%</td>
+                <td class="p-3.5"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-bold text-[10px]">Cần sửa lại</span></td>
+                <td class="p-3.5 text-slate-500">Hệ thống AI tự động cảnh báo</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 7: BÁO CÁO THỐNG KÊ ================= -->
+      <section id="tab-reports" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Báo Cáo Thống Kê Pháp Chế</h1>
+          <p class="text-xs text-slate-500 mt-1">Đánh giá tỷ lệ tuân thủ quảng cáo mỹ phẩm theo thời gian</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-semibold text-slate-500">Tỷ lệ tuân thủ bình quân</span>
+            <div class="mt-2 text-2xl font-black text-emerald-600">82.4%</div>
+            <p class="text-[11px] text-slate-400 mt-1">Cải thiện +5.4% sau khi áp dụng AI</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-semibold text-slate-500">Thời gian duyệt trung bình</span>
+            <div class="mt-2 text-2xl font-black text-blue-600">12 phút</div>
+            <p class="text-[11px] text-slate-400 mt-1">Giảm 80% so với rà soát thủ công</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span class="text-xs font-semibold text-slate-500">Tỷ lệ sửa thành công</span>
+            <div class="mt-2 text-2xl font-black text-purple-600">96.8%</div>
+            <p class="text-[11px] text-slate-400 mt-1">Chấp nhận gợi ý hợp chuẩn của AI</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 8: QUẢN LÝ NHÂN VIÊN ================= -->
+      <section id="tab-users" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Quản Lý Nhân Viên & Phân Quyền (RBAC)</h1>
+          <p class="text-xs text-slate-500 mt-1">Quy định phân quyền 3 tầng: Super Admin, Reviewer và Nhân viên</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-xs space-y-3 text-xs">
+          <div class="font-bold text-slate-800 text-sm">Ma trận phân quyền nghiêm ngặt:</div>
+          <ul class="list-disc pl-5 space-y-1.5 text-slate-600">
+            <li><strong>Nhân viên:</strong> Được kiểm tra bài viết bằng AI, xem gợi ý sửa, nhưng <em>KHÔNG ĐƯỢC</em> tự duyệt tài liệu nguồn và <em>KHÔNG ĐƯỢC</em> tự phê duyệt bài viết của chính mình.</li>
+            <li><strong>Reviewer:</strong> Có quyền phê duyệt tài liệu nguồn, kiểm tra và phê duyệt bài viết của nhân viên khác.</li>
+            <li><strong>Super Admin:</strong> Toàn quyền quản trị tài khoản, cài đặt API AI và điều chỉnh bộ quy tắc Thông tư 06.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ================= TAB 9: CÀI ĐẶT HỆ THỐNG ================= -->
+      <section id="tab-settings" class="tab-content space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-slate-900">Cài Đặt Hệ Thống & Cấu Hình AI</h1>
+          <p class="text-xs text-slate-500 mt-1">Kết nối OpenAI API và quản lý danh mục từ cấm Thông tư 06/2011/TT-BYT</p>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-xs space-y-4 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">OpenAI API Key (Lưu tại Server Backend):</label>
+            <input type="password" value="sk-proj-demo-api-key-secured-on-server" class="w-full max-w-md rounded-lg border border-slate-200 p-2 font-mono" disabled>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Mô hình AI suy luận:</label>
+            <input type="text" value="gpt-4o (OpenAI Structured Outputs)" class="w-full max-w-md rounded-lg border border-slate-200 p-2 font-semibold" disabled>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Phiên bản bộ quy tắc:</label>
+            <span class="rounded bg-blue-100 text-blue-800 px-2 py-0.5 font-bold font-mono">v1.0-VN-2024 (Thông tư 06/2011/TT-BYT)</span>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Tab switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.classList.add('bg-blue-50', 'text-blue-700');
+          btn.classList.remove('text-slate-650');
+        } else {
+          btn.classList.remove('bg-blue-50', 'text-blue-700');
+          btn.classList.add('text-slate-650');
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // Role switcher
+    function changeRole(role) {
+      const nameEl = document.getElementById('user-name');
+      const badgeEl = document.getElementById('user-role-badge');
+      if (role === 'super_admin') {
+        nameEl.innerText = 'Nguyễn Thành Nam';
+        badgeEl.innerText = 'Super Admin';
+      } else if (role === 'reviewer') {
+        nameEl.innerText = 'Trần Thị Mai';
+        badgeEl.innerText = 'Reviewer / Pháp Chế';
+      } else {
+        nameEl.innerText = 'Lê Hoàng Anh';
+        badgeEl.innerText = 'Nhân viên (Content)';
+      }
+    }
+
+    // Load presets
+    function loadSample(type) {
+      switchTab('checker');
+      const titleInput = document.getElementById('checker-title');
+      const contentInput = document.getElementById('checker-content');
+
+      if (type === 1) {
+        titleInput.value = 'Siêu phẩm Serum AURA - Đặc trị nám tận gốc chỉ sau 3 ngày!';
+        contentInput.value = `Tinh chất AURA Niacinamide 10% Glow Serum là bước đột phá mới giúp điều trị nám tận gốc và xóa sạch mụn hoàn toàn.
+Sản phẩm cam kết hiệu quả 100%, an toàn tuyệt đối và hoàn toàn không kích ứng cho mọi loại da.
+Chỉ sau 3 ngày sử dụng, làn da sẽ bật 5 tông và tái tạo tế bào gốc sâu bên trong biểu bì da.
+Nhờ chứa Niacinamide 10% và Zinc PCA 1%, serum giúp làm sáng đều màu da và hỗ trợ kiểm soát bã nhờn dư thừa.
+Hãy thoa 2 lần mỗi ngày để sở hữu làn da không tì vết mãi mãi!`;
+        simulateCheck();
+      } else {
+        titleInput.value = 'Dưỡng sáng da an toàn cùng Tinh chất AURA Niacinamide 10% Glow Serum';
+        contentInput.value = `Tinh chất dưỡng sáng da AURA Niacinamide 10% Glow Serum (Số công bố: 184920/22/CBMP-QLD) là giải pháp chăm sóc làn da xỉn màu và dầu nhờn.
+Với công thức kết hợp Niacinamide 10% và Zinc PCA 1%, sản phẩm giúp làm sáng đều màu da và hỗ trợ làm mờ các đốm nâu nhẹ trên bề mặt biểu bì.
+Đồng thời, serum hỗ trợ kiểm soát bã nhờn dư thừa và cân bằng độ ẩm cho làn da luôn thông thoáng.
+Sử dụng 3-4 giọt thoa đều lên mặt và cổ sau bước làm sạch, dùng 2 lần mỗi ngày và kết hợp kem chống nắng vào ban ngày.`;
+        simulateCompliantCheck();
+      }
+    }
+
+    function simulateCheck() {
+      const banner = document.getElementById('result-banner');
+      banner.className = 'rounded-xl p-4 border bg-rose-50 border-rose-200 text-rose-950 flex items-center justify-between';
+      banner.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i data-lucide="shield-alert" class="w-6 h-6 text-rose-600"></i>
+          <div>
+            <div class="text-xs font-bold uppercase">PHÁT HIỆN RỦI RO PHÁP LÝ & TỪ CẤM</div>
+            <div class="text-[11px] text-rose-800 mt-0.5">Phát hiện từ ngữ mang tính điều trị (trị nám tận gốc) & cam kết tuyệt đối 100%.</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xl font-black font-mono text-rose-700">20%</div>
+          <div class="text-[10px] font-bold uppercase text-slate-500">Độ phù hợp</div>
+        </div>
+      `;
+      document.getElementById('count-compliant').innerText = '1';
+      document.getElementById('count-insufficient').innerText = '1';
+      document.getElementById('count-contradictory').innerText = '3';
+      document.getElementById('count-risk').innerText = '3';
+      lucide.createIcons();
+    }
+
+    function simulateCompliantCheck() {
+      const banner = document.getElementById('result-banner');
+      banner.className = 'rounded-xl p-4 border bg-emerald-50 border-emerald-200 text-emerald-950 flex items-center justify-between';
+      banner.innerHTML = `
+        <div class="flex items-center gap-3">
+          <i data-lucide="check-circle-2" class="w-6 h-6 text-emerald-600"></i>
+          <div>
+            <div class="text-xs font-bold uppercase">BÀI VIẾT ĐẠT TIÊU CHUẨN PHÁP CHẾ (100% PHÙ HỢP)</div>
+            <div class="text-[11px] text-emerald-800 mt-0.5">Tất cả các tuyên bố công dụng đều có tài liệu Phiếu công bố 184920/22/CBMP-QLD chứng minh.</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-xl font-black font-mono text-emerald-700">100%</div>
+          <div class="text-[10px] font-bold uppercase text-slate-500">Độ phù hợp</div>
+        </div>
+      `;
+      document.getElementById('count-compliant').innerText = '4';
+      document.getElementById('count-insufficient').innerText = '0';
+      document.getElementById('count-contradictory').innerText = '0';
+      document.getElementById('count-risk').innerText = '0';
+
+      document.getElementById('claims-container').innerHTML = `
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50/40 p-3.5 space-y-2 text-xs">
+          <span class="rounded bg-emerald-600 text-white px-2 py-0.5 text-[10px] font-bold">100% PHÙ HỢP HỒ SƠ</span>
+          <p class="font-semibold text-slate-900 bg-white p-2 rounded border border-slate-100">
+            "Với công thức kết hợp Niacinamide 10% và Zinc PCA 1%, sản phẩm giúp làm sáng đều màu da và hỗ trợ làm mờ các đốm nâu nhẹ trên bề mặt biểu bì."
+          </p>
+          <div class="rounded bg-blue-50 border border-blue-100 p-2 text-[11px] text-blue-900">
+            <strong>Dẫn chứng tài liệu:</strong> Phieu_Cong_Bo_AURA_Niacinamide_184920.pdf (Trang 1, Mục đích sử dụng & Trang 2 Thành phần INCI).
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function applySingleRewrite(btn, newText) {
+      btn.innerText = 'Đã áp dụng';
+      btn.disabled = true;
+      btn.className = 'bg-slate-300 text-slate-600 px-2 py-0.5 rounded text-[10px] font-bold cursor-not-allowed';
+      alert('Đã cập nhật câu văn chuẩn hóa vào bài viết!');
+    }
+  </script>
+</body>
+</html>
